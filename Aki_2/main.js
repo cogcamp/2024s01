@@ -34,10 +34,10 @@ mainScene.create = function () {
     this.createPlayer();
     
     // UI作成
-    
+    this.createUI()
     
     // コイン作成
-    
+    this.createCoin()
     
     // 敵作成
     
@@ -56,9 +56,29 @@ mainScene.update = function() {
     if(this.isGameOver) {
         return false;
     }
+    if(this.cursors.left.isDown){
+        //左カーソルキーをクリックしたとき
+        this.player.body.setVelocityX(-this.runSpeed);
+        this.player.anims.play('walk',true);
+        this.player.flipX=true;
+        this.player.direction='left';
+    }else if(this.cursors.right.isDown){
+        // 右カーソルキーをクリックしたとき
+        this.player.body.setVelocityX(this.runSpeed);
+        this.player.anims.play('walk',true);
+        this.player.flipX=false;
+        this.player.direction='right';
+    }else {
+        //　カーソルキーをはなすと停止する
+        this.player.body.setVelocityX(0);
+        this.player.anims.stop();
+    }
+        //上カーソルキーをクリックしたとき
+    if(this.cursors.up.isDown && this.player.body.onFloor()){
+       this.player.body.setVelocityY(-this.jumpPower);
     
-    
-    
+    }
+
 };
 
 // マップ表示
@@ -123,16 +143,23 @@ mainScene.createPlayer = function() {
 
 mainScene.createUI = function() {
     // 画面右上にスコアを表示する
-    
-    
-    
+    this.scoreText=this.add.text(650, 50, 'Score: '+this.score,{
+        fontSize: '30px Open Sans',
+        fill:'#ff0000'
+    });
+    //文字は固定表示(カメラに合わせて移動しない)
+    this.scoreText.setScrollFactor(0);
 };
 
 mainScene.createCoin = function() {
     // コイン画像の読み込み
-    
-    
-    
+    var coinTiles = this.map.addTilesetImage('coin');
+    //コインレイヤー作成
+    this.coinLayer = this.map.createDynamicLayer('Coin',coinTiles,0,0);
+    //プレイヤーとコインレイヤーの衝突判定
+    this.physics.add.overlap(this.player,this.coinLayer);
+    //コインレイヤーとの衝突処理
+    this.coinLayer.setTileIndexCallback(17,this.collectCoin,this);
 };
 
 mainScene.collectCoin = function(sprite, tile) {
